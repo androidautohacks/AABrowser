@@ -15,6 +15,10 @@ permissions:
   contents: write
   issues: write
 
+concurrency:
+  group: upstream-sync-check
+  cancel-in-progress: false   # let an in-flight run finish rather than racing it
+
 jobs:
   check-sync:
     runs-on: ubuntu-latest
@@ -74,6 +78,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/upstream-sync-status.json
           git diff --cached --quiet && echo "No change" || git commit -m "chore: update upstream sync status"
+          git pull --rebase --autostash origin main
           git push
 
       - name: Open issue if fork is behind
