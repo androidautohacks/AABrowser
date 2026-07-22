@@ -1,0 +1,128 @@
+name: Upstream AABrowser Sync Check
+
+# Checks kododake/AABrowser (upstream) against this fork's latest release.
+# Writes the result to data/upstream-sync-status.json so the About/Credits
+# page on aabrowser.app can display honest, current version parity info.
+# Opens a tracking issue when the fork falls behind, so it doesn't rely on
+# someone remembering to check manually.
+
+on:
+  schedule:
+    - cron: "0 6 * * *"   # daily, 06:00 UTC. adjust cadence as needed
+  workflow_dispatch: {}     # allows manual trigger from the Actions tab
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  check-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch upstream and fork release data
+        id: fetch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          upstream_json=$(curl -sf -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/kododake/AABrowser/releases/latest)
+
+          fork_json=$(curl -sf -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/androidautohacks/AABrowser/releases/latest)
+
+          upstream_version=$(echo "$upstream_json" | jq -r '.tag_name // "unknown"')
+          upstream_published=$(echo "$upstream_json" | jq -r '.published_at // "unknown"')
+          fork_version=$(echo "$fork_json" | jq -r '.tag_name // "unknown"')
+          fork_published=$(echo "$fork_json" | jq -r '.published_at // "unknown"')
+
+          if [ "$upstream_version" = "$fork_version" ]; then
+            status="in_sync"
+          else
+            status="behind"
+          fi
+
+          checked_at=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          mkdir -p data
+          cat > data/upstream-sync-status.json <<EOF
+          {
+            "upstream_repo": "kododake/AABrowser",
+            "upstream_version": "$upstream_version",
+            "upstream_published_at": "$upstream_published",
+            "fork_repo": "androidautohacks/AABrowser",
+            "fork_version": "$fork_version",
+            "fork_published_at": "$fork_published",
+            "sync_status": "$status",
+            "checked_at": "$checked_at"
+          }
+          EOF
+
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          echo "upstream_version=$upstream_version" >> "$GITHUB_OUTPUT"
+          echo "fork_version=$fork_version" >> "$GITHUB_OUTPUT"
+
+      - name: Commit updated status file
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/upstream-sync-status.json
+          git diff --cached --quiet && echo "No change" || git commit -m "chore: update upstream sync status"
+          git push
+
+      - name: Open issue if fork is behind
+        if: steps.fetch.outputs.status == 'behind'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const upstream = "${{ steps.fetch.outputs.upstream_version }}";
+            const fork = "${{ steps.fetch.outputs.fork_version }}";
+            const title = "Upstream sync: fork is behind kododake/AABrowser";
+            const { data: existing } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open",
+              labels: "upstream-sync"
+            });
+            if (existing.length > 0) {
+              return; // already tracked, don't spam a new issue
+            }
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              labels: ["upstream-sync"],
+              body: `Upstream (kododake/AABrowser) is at **${upstream}**, this fork is at **${fork}**.\n\nThe About/Credits page on aabrowser.app currently displays this gap honestly (via data/upstream-sync-status.json), but the fork itself still needs a manual merge/update to close it.\n\nCloses automatically once this workflow detects sync_status = in_sync again.`
+            });
+
+      - name: Close tracking issue if back in sync
+        if: steps.fetch.outputs.status == 'in_sync'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: existing } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open",
+              labels: "upstream-sync"
+            });
+            for (const issue of existing) {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                state: "closed"
+              });
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: "Fork is back in sync with upstream. Closing automatically."
+              });
+            }
