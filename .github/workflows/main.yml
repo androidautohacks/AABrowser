@@ -96,7 +96,7 @@ jobs:
 
           # target the exact tagged commit, not main's tip, so the release
           # can never point at code main happens to have drifted to
-          flags=(--repo androidautohacks/AABrowser --title "$title" --notes "$body" --target "$tag")
+          flags=(--repo androidautohacks/AABrowser --title "$title" --notes "$body")
           [ "$is_prerelease" = "true" ] && flags+=(--prerelease)
 
           gh release create "$tag" "${flags[@]}"
