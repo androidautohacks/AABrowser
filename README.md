@@ -33,7 +33,7 @@ Transform your "parked time" with a sleek, modern browser designed specifically 
 - 🎯 **Native Automotive UI:** Designed specifically for car displays, not just a stretched phone app.
 - 🎬 **Immersive Media:** Watch fullscreen DRM-protected video (supports Widevine L3 only due to technical limitations) — perfect for charging breaks or while parked in a "flat, boring desert world."
 - 🎨 **Light + AMOLED Themes:** Switch between a bright light theme and a true-black AMOLED dark mode built for car displays.
-- 🌓 **Beta Dark Pages:** Optionally ask WebView to darken supported pages while the dark theme is active.
+- 🌓 **Beta Dark Pages:** When the dark theme is enabled, the WebView may optionally apply a darkening effect to compatible web pages.
 - 🏠 **Home Page Or Start Page:** Launch straight into a custom home page, or use the start page dashboard when no home page is set.
 - 🚀 **Six Quick Links:** The start page now supports up to six shortcut cards with default popular sites and a custom background image.
 - 🗂️ **Real Tabs + Tab Manager:** Open multiple browser tabs, switch between them from the in-app tab manager, and close tabs without losing your place.
