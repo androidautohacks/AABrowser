@@ -23,6 +23,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.mutableStateOf
+import com.kododake.aabrowser.AppConstants
 import com.kododake.aabrowser.R
 import com.kododake.aabrowser.bookmarks.BookmarkManager
 import com.kododake.aabrowser.data.BrowserPreferences
@@ -138,6 +139,19 @@ class StartPageManager(
                     } catch (_: Exception) {
                         Toast.makeText(activity, R.string.error_generic_message, Toast.LENGTH_SHORT).show()
                     }
+                },
+                onOpenAAAnything = {
+                    try {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(AppConstants.AA_ANYTHING_LATEST_RELEASE_URL))
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        activity.startActivity(intent)
+                    } catch (_: Exception) {
+                        Toast.makeText(activity, R.string.error_generic_message, Toast.LENGTH_SHORT).show()
+                    }
+                },
+                onDismissAAAnything = {
+                    BrowserPreferences.setShowAAAnythingPromotion(activity, false)
+                    refreshStartPage()
                 }
             )
 
