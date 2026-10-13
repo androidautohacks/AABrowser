@@ -1,10 +1,10 @@
 {
   "upstream_repo": "kododake/AABrowser",
-  "upstream_version": "v3.0",
-  "upstream_published_at": "2026-09-24T23:34:12Z",
+  "upstream_version": "v3.3",
+  "upstream_published_at": "2026-10-13T11:56:40Z",
   "fork_repo": "androidautohacks/AABrowser",
   "fork_version": "v3.0",
   "fork_published_at": "2026-09-25T10:37:18Z",
-  "sync_status": "in_sync",
-  "checked_at": "2026-10-12T13:36:36Z"
+  "sync_status": "behind",
+  "checked_at": "2026-10-13T12:59:46Z"
 }
