@@ -3,8 +3,8 @@
   "upstream_version": "v3.3",
   "upstream_published_at": "2026-10-13T11:56:40Z",
   "fork_repo": "androidautohacks/AABrowser",
-  "fork_version": "v3.0",
-  "fork_published_at": "2026-09-25T10:37:18Z",
-  "sync_status": "behind",
-  "checked_at": "2026-10-13T12:59:46Z"
+  "fork_version": "v3.3",
+  "fork_published_at": "2026-10-13T12:59:51Z",
+  "sync_status": "in_sync",
+  "checked_at": "2026-10-14T10:40:38Z"
 }
